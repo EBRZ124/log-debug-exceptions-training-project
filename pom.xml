@@ -24,6 +24,14 @@
             <version>2.0.13</version>
         </dependency>
 
+        <!-- Source: https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.46</version>
+            <scope>compile</scope>
+        </dependency>
+
         <!-- Logback - SLF4J implementation, configured via logback.xml -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
