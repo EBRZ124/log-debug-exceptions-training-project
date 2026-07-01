@@ -1,6 +1,7 @@
 package com.bootcamp.smarthome.controller;
 
 import com.bootcamp.smarthome.device.Device;
+import com.bootcamp.smarthome.exception.HomeAutomationException;
 
 /**
  * Central hub that manages all registered smart devices.
@@ -68,23 +69,29 @@ public class HomeController {
      *
      * @param fullCommand the full command string
      */
-    public void sendCommand(String fullCommand) {
+    public void sendCommand(String fullCommand) throws HomeAutomationException{
         String deviceId = CommandParser.extractDeviceId(fullCommand);
         String command  = CommandParser.extractCommand(fullCommand);
 
-        Device device = findDevice(deviceId);
-
-        if (device == null) {
-            System.out.println("Device not found: " + deviceId);
-            return;
+        try {
+            Device device = findDevice(deviceId);
+            if (device == null){
+                System.out.println("Device not found with id: " + deviceId);
+                return;
+            }
+            if (!device.isOnline()) {
+                System.out.println("WARNING: device with id: "+deviceId+
+                        " is offline - command skipped");
+                return;
+            }
+            device.executeCommand(command);
+        } catch (HomeAutomationException e) {
+            throw new HomeAutomationException(
+                    "Command " + fullCommand + " faile for device " + deviceId, e
+            );
+        } finally {
+            System.out.println("Command processing ended for device with id: " + deviceId);
         }
-
-        if (!device.isOnline()) {
-            System.out.println("WARNING: Device '" + deviceId + "' is offline — command skipped.");
-            return;
-        }
-
-        device.executeCommand(command);
     }
 
     // -------------------------------------------------------------------------
