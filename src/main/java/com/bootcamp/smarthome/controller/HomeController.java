@@ -2,7 +2,8 @@ package com.bootcamp.smarthome.controller;
 
 import com.bootcamp.smarthome.device.Device;
 import com.bootcamp.smarthome.exception.HomeAutomationException;
-
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 /**
  * Central hub that manages all registered smart devices.
  *
@@ -12,6 +13,8 @@ import com.bootcamp.smarthome.exception.HomeAutomationException;
 public class HomeController {
 
     public static final int MAX_DEVICES = 8;
+
+    private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
     private final Device[] devices = new Device[MAX_DEVICES];
     private int deviceCount = 0;
@@ -48,7 +51,7 @@ public class HomeController {
      * Returns {@code null} when no matching device is found.
      */
     public Device findDevice(String deviceId) {
-        for (int i = 0; i <= deviceCount; i++) {
+        for (int i = 0; i < deviceCount; i++) {
             if (devices[i] != null && devices[i].getDeviceId().equals(deviceId)) {
                 return devices[i];
             }
@@ -73,6 +76,8 @@ public class HomeController {
         String deviceId = CommandParser.extractDeviceId(fullCommand);
         String command  = CommandParser.extractCommand(fullCommand);
 
+        logger.debug("Command recieved for device {} : {}", deviceId, command);
+
         try {
             Device device = findDevice(deviceId);
             if (device == null){
@@ -82,10 +87,13 @@ public class HomeController {
             if (!device.isOnline()) {
                 System.out.println("WARNING: device with id: "+deviceId+
                         " is offline - command skipped");
+                logger.warn("Device {} is offline; Command {} was skipped", deviceId, command);
                 return;
             }
             device.executeCommand(command);
+            logger.info("Command {} executed for device {}", command, deviceId);
         } catch (HomeAutomationException e) {
+            logger.error("Command {} failed for device {}; Message: {}", fullCommand, deviceId, e.getMessage());
             throw new HomeAutomationException(
                     "Command " + fullCommand + " faile for device " + deviceId, e
             );
